@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "creation": "2026-08-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled", "column_break_0", "company",
+  "section_stock", "consumable_warehouse", "consumable_expense_account", "column_break_1", "consumable_cost_center", "stock_entry_type",
+  "section_kit", "venipuncture_item", "column_break_2", "consume_on_delivery_note", "consume_on_sales_invoice",
+  "section_batch", "batch_strategy", "allow_expired_batches", "column_break_3", "block_on_shortage", "shortage_tolerance_qty",
+  "section_scope", "lab_item_groups"
+ ],
+ "fields": [
+  {"fieldname": "enabled", "fieldtype": "Check", "label": "Enabled", "default": "0"},
+  {"fieldname": "column_break_0", "fieldtype": "Column Break"},
+  {"fieldname": "company", "fieldtype": "Link", "label": "Default Company", "options": "Company"},
+
+  {"fieldname": "section_stock", "fieldtype": "Section Break", "label": "Stock Posting"},
+  {"fieldname": "consumable_warehouse", "fieldtype": "Link", "label": "Lab Store Warehouse", "options": "Warehouse", "reqd": 1},
+  {"fieldname": "consumable_expense_account", "fieldtype": "Link", "label": "Consumption Expense Account", "options": "Account"},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "consumable_cost_center", "fieldtype": "Link", "label": "Cost Center", "options": "Cost Center"},
+  {"fieldname": "stock_entry_type", "fieldtype": "Link", "label": "Issue Stock Entry Type", "options": "Stock Entry Type", "default": "Material Issue"},
+
+  {"fieldname": "section_kit", "fieldtype": "Section Break", "label": "Shared Consumables"},
+  {"fieldname": "venipuncture_item", "fieldtype": "Link", "label": "Venipuncture Kit Item", "options": "Item", "description": "Item whose Lab Consumables table holds needle, cotton, swab, gloves. Issued once per document when any test on it requires venipuncture."},
+  {"fieldname": "column_break_2", "fieldtype": "Column Break"},
+  {"fieldname": "consume_on_delivery_note", "fieldtype": "Check", "label": "Consume on Delivery Note", "default": "1"},
+  {"fieldname": "consume_on_sales_invoice", "fieldtype": "Check", "label": "Consume on Sales Invoice", "default": "1", "description": "Leave both on only if Plasma sends exactly one document type. Two enabled document types against the same visit will consume twice."},
+
+  {"fieldname": "section_batch", "fieldtype": "Section Break", "label": "Batch Selection"},
+  {"fieldname": "batch_strategy", "fieldtype": "Select", "label": "Batch Strategy", "options": "Nearest Expiry\nFIFO by Creation", "default": "Nearest Expiry"},
+  {"fieldname": "allow_expired_batches", "fieldtype": "Check", "label": "Allow Expired Batches", "default": "0"},
+  {"fieldname": "column_break_3", "fieldtype": "Column Break"},
+  {"fieldname": "block_on_shortage", "fieldtype": "Check", "label": "Block Document on Shortage", "default": "1", "description": "When off, a shortage is logged and the shortfall is skipped rather than blocking the sale."},
+  {"fieldname": "shortage_tolerance_qty", "fieldtype": "Float", "label": "Shortage Tolerance Qty", "default": "0", "precision": "6"},
+
+  {"fieldname": "section_scope", "fieldtype": "Section Break", "label": "Scope"},
+  {"fieldname": "lab_item_groups", "fieldtype": "Table", "label": "Lab Item Groups", "options": "Lab Item Group Filter", "description": "Item groups treated as lab services. Used by the guard that rejects unconfigured test items."}
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Alphax Lab",
+ "name": "Lab Consumption Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "print": 1, "read": 1, "role": "System Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
