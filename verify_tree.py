@@ -91,6 +91,21 @@ def check_no_server_scripts():
 			errors.append(f"Server Script fixture found: {path.relative_to(ROOT)}")
 
 
+def check_frappe_dependencies():
+	"""Frappe Cloud rejects the app at deploy time without this block."""
+	import tomllib
+
+	data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+	deps = data.get("tool", {}).get("bench", {}).get("frappe-dependencies")
+	if not deps:
+		errors.append("pyproject.toml missing [tool.bench.frappe-dependencies]")
+		return
+	if "frappe" not in deps:
+		errors.append("[tool.bench.frappe-dependencies] missing 'frappe' pin")
+	if "erpnext" not in deps:
+		errors.append("[tool.bench.frappe-dependencies] missing 'erpnext' pin")
+
+
 def check_bundle_guard():
 	"""The Product Bundle double-consumption guard must not be removed."""
 	src = (APP / "doctype" / "plasma_test_map" / "plasma_test_map.py").read_text()
@@ -124,6 +139,7 @@ def main():
 	check_doctypes()
 	check_hooks()
 	check_no_server_scripts()
+	check_frappe_dependencies()
 	check_bundle_guard()
 	check_tabs()
 
