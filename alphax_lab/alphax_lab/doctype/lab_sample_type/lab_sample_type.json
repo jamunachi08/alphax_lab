@@ -6,14 +6,43 @@
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": ["sample_type_name", "sample_type_name_ar", "container_item", "column_break_1", "is_active", "description"],
+ "field_order": [
+  "sample_type_name",
+  "sample_type_name_ar",
+  "column_break_1",
+  "is_active",
+  "description"
+ ],
  "fields": [
-  {"fieldname": "sample_type_name", "fieldtype": "Data", "in_list_view": 1, "label": "Sample Type", "reqd": 1, "unique": 1},
-  {"fieldname": "sample_type_name_ar", "fieldtype": "Data", "label": "Sample Type (Arabic)", "translatable": 1},
-  {"fieldname": "container_item", "fieldtype": "Link", "in_list_view": 1, "label": "Container Item", "options": "Item", "description": "Item whose Lab Consumables table defines the container (tube, cup) issued once per document for this sample type."},
-  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
-  {"fieldname": "is_active", "fieldtype": "Check", "label": "Is Active", "default": "1"},
-  {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"}
+  {
+   "fieldname": "sample_type_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sample Type",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "sample_type_name_ar",
+   "fieldtype": "Data",
+   "label": "Sample Type (Arabic)",
+   "translatable": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "1"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
@@ -23,8 +52,30 @@
  "name": "Lab Sample Type",
  "owner": "Administrator",
  "permissions": [
-  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
-  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Stock Manager", "share": 1, "write": 1}
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "write": 1
+  }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

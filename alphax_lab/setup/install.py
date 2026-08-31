@@ -23,8 +23,8 @@ CUSTOM_FIELDS = {
 			"options": "Lab Consumable Item",
 			"insert_after": "lab_consumables_section",
 			"description": (
-				"Stock consumed each time this item is sold. Used for lab test items, "
-				"the venipuncture kit item, and sample container items."
+				"Stock consumed each time one unit of this item is sold. Define the full "
+				"consumable list for each lab test here."
 			),
 			"module": "Alphax Lab",
 		},

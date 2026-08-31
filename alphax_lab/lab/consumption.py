@@ -5,18 +5,17 @@
 
 Plasma sends test-level lines only (e.g. "CBC"). The billing document stays a
 faithful mirror of what Plasma billed: no injected lines, no zero-rate rows, no
-Packed Items. Consumption is booked separately as a Material Issue Stock Entry
-on submit and reversed on cancel.
+Packed Items, nothing extra in the ZATCA XML or on the printed invoice.
 
-Three tiers of consumption are aggregated into one plan per document:
+Each test Item carries its own complete Lab Consumables child table. Consumption
+is the sum of every mapped line's consumables, multiplied by that line's qty.
+There are no shared or document-level tiers: what a test consumes is defined
+once, on the test.
 
-    tier 1  venipuncture kit   once per document, if any test needs a draw
-    tier 2  sample containers  once per distinct sample type on the document
-    tier 3  test consumables   per test line, multiplied by line qty
-
-Every tier is defined the same way: an Item carrying a `lab_consumables` child
-table. Scope is strictly per-document, matching the Plasma contract of one
-invoice per patient visit.
+The plan is booked as a Material Issue Stock Entry on submit, linked back to the
+source document, and reversed on cancel. This fires the same way whether the
+document was typed by a user, created by Data Import, or posted over the API,
+because it is driven by the submit event rather than the entry channel.
 """
 
 from collections import OrderedDict
@@ -42,7 +41,7 @@ def on_submit(doc, method=None):
 	if _existing_entry(doc):
 		return
 
-	plan, context = build_plan(doc, settings)
+	plan, context = build_plan(doc)
 	if not plan:
 		return
 
@@ -91,24 +90,23 @@ def validate(doc, method=None):
 def build_plan(doc, settings=None):
 	"""Return (plan, context).
 
-	plan    OrderedDict of item_code -> qty
-	context dict describing which tiers fired, for the Stock Entry remark
+	plan    OrderedDict of consumable item_code -> qty
+	context dict of which tests drove the plan, for the Stock Entry remark
+
+	Every mapped line contributes its own consumables scaled by line qty. Two
+	tests that each list a needle consume two needles; that is intentional and
+	is what the Lab Consumption Variance report is there to measure.
 	"""
-	settings = settings or get_settings()
 	plan = OrderedDict()
-	context = {"tests": [], "sample_types": [], "venipuncture": False}
+	context = {"tests": []}
 
 	sign = -1 if cint(doc.get("is_return")) else 1
-
-	needs_draw = False
-	sample_types = []
 
 	for row in doc.get("items", []):
 		if not row.item_code:
 			continue
 
-		test_map = _get_map(row.item_code)
-		if not test_map:
+		if not _get_map(row.item_code):
 			continue
 
 		qty = flt(row.qty) * sign
@@ -116,26 +114,7 @@ def build_plan(doc, settings=None):
 			continue
 
 		context["tests"].append(row.item_code)
-
-		if cint(test_map.requires_venipuncture):
-			needs_draw = True
-		if test_map.sample_type and test_map.sample_type not in sample_types:
-			sample_types.append(test_map.sample_type)
-
 		_add_consumables(plan, row.item_code, multiplier=qty)
-
-	if not context["tests"]:
-		return OrderedDict(), context
-
-	if needs_draw and settings.venipuncture_item:
-		context["venipuncture"] = True
-		_add_consumables(plan, settings.venipuncture_item, multiplier=1)
-
-	for sample_type in sample_types:
-		container = frappe.get_cached_value("Lab Sample Type", sample_type, "container_item")
-		if container:
-			context["sample_types"].append(sample_type)
-			_add_consumables(plan, container, multiplier=1)
 
 	return OrderedDict((k, v) for k, v in plan.items() if flt(v) > 0), context
 
@@ -188,9 +167,6 @@ def create_consumption_entry(doc, plan, context, settings):
 		if shortfall > flt(settings.shortage_tolerance_qty):
 			shortages.append(batch_selection.describe_shortage(item_code, warehouse, qty, shortfall))
 
-		# On a return the batch lookup is meaningless; put it back unbatched
-		# unless the item is batched, in which case receipt needs a batch and
-		# the operator must handle it manually.
 		for allocation in allocations:
 			_append_entry_row(entry, item_code, allocation, warehouse, is_return, settings)
 
@@ -253,10 +229,6 @@ def _build_remark(doc, context):
 		parts.append(_("Plasma ref: {0}").format(doc.plasma_ref))
 	if context.get("tests"):
 		parts.append(_("Tests: {0}").format(", ".join(context["tests"])))
-	if context.get("venipuncture"):
-		parts.append(_("Includes venipuncture kit"))
-	if context.get("sample_types"):
-		parts.append(_("Containers: {0}").format(", ".join(context["sample_types"])))
 	return "\n".join(parts)
 
 
@@ -291,7 +263,7 @@ def _get_map(item_code):
 	rows = frappe.get_all(
 		"Plasma Test Map",
 		filters={"item": item_code, "is_active": 1},
-		fields=["name", "sample_type", "requires_venipuncture"],
+		fields=["name", "sample_type"],
 		limit=1,
 	)
 	return rows[0] if rows else None

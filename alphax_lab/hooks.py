@@ -4,7 +4,7 @@
 app_name = "alphax_lab"
 app_title = "AlphaX Lab"
 app_publisher = "Neotec Integrated Solutions"
-app_description = "Lab consumable consumption for Plasma-integrated ERPNext"
+app_description = "Lab consumable consumption for Plasma-integrated lab operations"
 app_email = "support@neotec.sa"
 app_license = "Commercial"
 required_apps = ["erpnext"]

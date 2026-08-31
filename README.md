@@ -1,36 +1,57 @@
 # AlphaX Lab
 
-Lab consumable consumption for ERPNext v15, integrated with Plasma pharma invoicing.
+Lab consumable consumption, integrated with Plasma pharma invoicing.
 
-Version 0.1.0
+Version 0.2.0
 
 ---
 
 ## What it does
 
-Plasma sends test-level invoice lines only (`CBC`, `LFT`, `Urine Routine`). ERPNext
-receives them as-is. The billing document remains an exact mirror of what Plasma
-billed: no injected lines, no zero-rate rows, no Packed Items, nothing extra in the
-ZATCA XML or on the printed invoice.
+Plasma sends test-level invoice lines only (`CBC`, `LFT`, `Urine Routine`). Those
+arrive as-is. The billing document stays an exact mirror of what Plasma billed:
+no injected lines, no zero-rate rows, no Packed Items, nothing extra in the ZATCA
+XML or on the printed invoice.
 
-Consumption is booked separately as a Material Issue Stock Entry on submit, linked
-back to the source document, and reversed on cancel.
+Each test Item carries its own complete consumable list. When a document is
+submitted, every mapped line's consumables are summed and issued from the lab
+store as a Material Issue Stock Entry, linked back to the source document and
+reversed on cancel.
 
-### Three tiers, one plan
+Consumption is driven by the submit event, so it fires identically whether the
+document was typed by a user, created through Data Import, or posted over the
+REST API. Data Import only triggers it if the import submits; drafts consume
+nothing until submitted.
 
-| Tier | Examples | Frequency |
-|---|---|---|
-| Venipuncture kit | needle, cotton, alcohol swab, gloves, plaster | once per document |
-| Sample container | EDTA tube, serum tube, urine cup | once per distinct sample type |
-| Test consumables | reagents, cuvettes, controls, slides | per test line × line qty |
+---
 
-Tiers 1 and 2 exist because one blood draw serves every test on the invoice. Putting
-a needle in each test's consumable list would consume three needles for a three-test
-panel drawn once.
+## The consumable list
 
-All three tiers are defined the same way: an Item carrying a **Lab Consumables** child
-table. The venipuncture kit and each container are ordinary Items with that table
-filled in and nothing else.
+One child table, **Lab Consumables**, on each test Item. Define everything the
+test needs, draw items included:
+
+| Item | Qty |
+|---|---|
+| NEEDLE-21G | 1 |
+| COTTON | 2 |
+| TUBE-EDTA | 1 |
+| REG-CBC | 1 |
+| CTRL-CBC | 0.05 |
+
+Quantities are per one unit sold and scale with line qty. Fractional quantities
+are supported for reagents and controls, as long as the UOM does not have "Must
+be Whole Number" set.
+
+### One thing to watch
+
+Consumables accumulate across lines. A document with CBC and LFT, each listing a
+needle, consumes two needles even though the patient was drawn once. That is the
+model working as specified, not a bug.
+
+Whether it matters depends on how often multiple blood tests share an invoice.
+Watch the **Lab Consumption Variance** report. If needles and tubes drift
+consistently high against physical counts, the cheap fix is to list the draw
+consumables on one designated test per common panel rather than on all of them.
 
 ---
 
@@ -42,8 +63,8 @@ bench --site <site> install-app alphax_lab
 bench --site <site> migrate
 ```
 
-`after_install` and `after_migrate` are idempotent. They create the custom fields,
-seed six standard sample types, and initialise settings.
+`after_install` and `after_migrate` are idempotent. They create the custom
+fields, seed six standard sample types, and initialise settings.
 
 ---
 
@@ -52,34 +73,31 @@ seed six standard sample types, and initialise settings.
 1. **Warehouse** — create `Lab Store` and set it in Lab Consumption Settings.
 2. **Consumable items** — needles, cotton, tubes, reagents. Maintain Stock = 1.
    Turn on Has Batch No plus Has Expiry Date only for reagents where expiry
-   genuinely matters. Batching cheap consumables costs you time and buys nothing.
-3. **Venipuncture kit item** — a non-stock Item, e.g. `KIT-VENIPUNCTURE`, with its
-   Lab Consumables table listing needle 1, cotton 2, swab 1, gloves 1, plaster 1.
-   Set it in Settings.
-4. **Container items** — one non-stock Item per container, e.g. `CONT-EDTA` with
-   Lab Consumables holding the EDTA tube ×1. Link each to its Lab Sample Type.
-5. **Test items** — `LAB-CBC` etc. Maintain Stock = 0, Is Sales Item = 1. Fill the
-   Lab Consumables table with reagents only. **Do not create a Product Bundle** for
-   these; the Plasma Test Map validator rejects that, because a bundle would consume
-   through Packed Items as well and double count.
-6. **Plasma Test Map** — one row per Plasma test name, linking to the item, its
-   sample type, and whether it needs a draw.
-7. **Item group** — put test items in `Lab Tests` and list that group in Settings.
-   Any line in a listed group without an active map will be rejected on validate,
-   so an unconfigured test can never post silently with zero consumption.
-8. Turn on **Enabled**.
+   genuinely matters. Batching cheap consumables costs time and buys nothing.
+3. **Test items** — `LAB-CBC` etc. Maintain Stock = 0, Is Sales Item = 1. Fill
+   the Lab Consumables table with the complete list for that test. **Do not
+   create a Product Bundle** for these; the Plasma Test Map validator rejects
+   that, because a bundle would consume through Packed Items as well and double
+   count.
+4. **Plasma Test Map** — one row per Plasma test name, linking to its item.
+   Sample type is optional classification for reporting.
+5. **Item group** — put test items in `Lab Tests` and list that group in
+   Settings. Any line in a listed group without an active map is rejected on
+   validate, so an unconfigured test can never post silently with zero
+   consumption.
+6. Turn on **Enabled**.
 
 ### Document scope
 
 Enable `Consume on Sales Invoice` **or** `Consume on Delivery Note`, not both,
-unless you are certain a visit only ever produces one of them. Two enabled document
-types against the same visit consume twice.
+unless a visit only ever produces one of them. Two enabled document types
+against the same visit consume twice.
 
 ---
 
 ## Integration contract
 
-Post the Plasma invoice to ERPNext with test lines only:
+Post the Plasma invoice with test lines only:
 
 ```json
 POST /api/resource/Sales Invoice
@@ -90,21 +108,22 @@ POST /api/resource/Sales Invoice
   "posting_time": "10:42:00",
   "set_posting_time": 1,
   "items": [
-    { "item_code": "LAB-CBC",   "qty": 1, "rate": 45 },
-    { "item_code": "LAB-LFT",   "qty": 1, "rate": 90 }
+    { "item_code": "LAB-CBC", "qty": 1, "rate": 45 },
+    { "item_code": "LAB-LFT", "qty": 1, "rate": 90 }
   ]
 }
 ```
 
 - `plasma_ref` is unique. A retried webhook fails on duplicate rather than
   consuming twice. This is the real idempotency guard.
-- Resolve Plasma test names to `item_code` through Plasma Test Map before posting.
-  An unmapped name should park in your staging queue, not auto-create an Item.
+- Resolve Plasma test names to `item_code` through Plasma Test Map before
+  posting. An unmapped name should park in your staging queue, never
+  auto-create an Item.
 - Stage before posting. Hold the payload in a queue doctype and let a background
-  job create and submit. If the lab store is short on cotton, a synchronous design
-  fails Plasma's API call; a queued design leaves a retryable row.
-- Credit notes post as `is_return: 1`. The app books a Material Receipt back into
-  the lab store.
+  job create and submit. If the lab store is short on cotton, a synchronous
+  design fails Plasma's API call; a queued design leaves a retryable row.
+- Credit notes post as `is_return: 1`. A Material Receipt returns the
+  consumables to the lab store.
 
 ### Preview endpoint
 
@@ -123,65 +142,58 @@ for support triage.
 this app against a sales document) and unattributed (QC runs, calibration,
 re-draws, breakage, expired write-offs, manual issues).
 
-Watch the unattributed share. A small stable percentage is normal and healthy. A
-rising one means the per-document model has drifted from bench reality, usually
-because same-day add-on invoices are re-issuing venipuncture kits, or because QC
-consumption has grown.
+Watch the unattributed share. A small stable percentage is normal. A rising one
+means the consumable lists have drifted from what the bench actually uses.
 
 ---
 
 ## Known trade-offs
 
-**Same-day add-ons.** Scope is per-document by design. An add-on test invoiced
-after the draw consumes a second venipuncture kit. If add-ons are routine, this
-becomes a standing overstatement on needles, cotton and tubes. Measure it in the
-variance report before deciding whether to solve it; the fix is a same-day
-patient-level dedupe, which trades away statelessness and introduces a race
-between concurrent webhooks.
+**Shared draw consumables.** Covered above. Multiple blood tests on one document
+consume one draw kit each.
 
 **Gross margin per test.** Consumption hits an expense account through a Material
-Issue rather than COGS on the invoice, so ERPNext's stock-linked profitability
-reports will not show lab margin. A custom report joining Stock Entry back to its
-source document is needed if finance wants per-test margin.
+Issue rather than COGS on the invoice, so stock-linked profitability reports will
+not show lab margin. A custom report joining Stock Entry back to its source
+document is needed if finance wants per-test margin.
 
 **Batch returns.** A credit note for a batched reagent books a Material Receipt
-without a batch, which ERPNext will reject. Reagents are rarely returned in
-practice; if they are, handle the reversal manually.
-
-**Line qty above 1.** Reagents scale with line qty; the venipuncture kit and
-containers do not. That is correct when qty 2 means a repeat run on the same
-sample, and wrong if Plasma ever puts two patients on one invoice. Confirm which
-Plasma means before go-live.
+without a batch, which will be rejected. Reagents are rarely returned; if they
+are, handle the reversal manually.
 
 **Non-billable consumption.** QC, calibration and wastage are issued manually as
-ordinary Stock Entries. They are deliberately outside this app's scope and show up
-as unattributed in the variance report.
+ordinary Stock Entries. They are deliberately outside this app's scope and show
+up as unattributed in the variance report.
 
 ---
 
 ## Test plan before go-live
 
-1. Single test, single sample type. One needle, one tube, correct reagents.
-2. Three tests, one draw, two sample types. One needle, two tubes.
-3. Cancel the invoice. Stock Entry cancels, stock returns.
-4. Amend and resubmit. Exactly one active Stock Entry remains.
-5. Duplicate `plasma_ref`. Insert fails, no stock movement.
-6. Batched reagent with two open batches, one expiring sooner. Nearest expiry is
+1. Single test. Consumables match the item's list exactly.
+2. Two blood tests on one document. Shared consumables accumulate as expected.
+3. Line qty 2. Everything doubles.
+4. Cancel the document. Stock Entry cancels, stock returns.
+5. Amend and resubmit. Exactly one active Stock Entry remains.
+6. Duplicate `plasma_ref`. Insert fails, no stock movement.
+7. Batched reagent with two open batches, one expiring sooner. Nearest expiry is
    picked, and the row splits when one batch cannot cover the qty.
-7. Expired batch only. Document is blocked with a clear message.
-8. Lab store short on cotton. Document is blocked when `block_on_shortage` is on,
-   and logged when off.
-9. Credit note. Material Receipt returns unbatched consumables to stock.
-10. Test item in `Lab Tests` with no map. Validate rejects it.
+8. Expired batch only. Document is blocked with a clear message.
+9. Lab store short on cotton. Blocked when `block_on_shortage` is on, logged
+   when off.
+10. Credit note. Material Receipt returns unbatched consumables to stock.
+11. Test item in `Lab Tests` with no map. Validate rejects it.
+12. Data Import of submitted documents. Consumption fires per document.
 
 ---
 
 ## House rules
 
-Run `python tests/test_consumption_plan.py` for the plan builder. It stubs frappe
-with fixture data, so it needs no bench and no database and can run in CI from a
-clean checkout.
+```bash
+python tests/test_consumption_plan.py   # plan builder, no bench or DB needed
+python verify_tree.py                   # structural guard, run before commit
+```
 
-Run `python verify_tree.py` before every commit. It checks file structure, doctype
-module ownership, hook wiring, tab indentation, absence of Server Script fixtures,
-and that the Product Bundle double-consumption guard is still in place.
+`verify_tree.py` checks file structure, doctype module ownership, hook wiring,
+tab indentation, absence of Server Script fixtures, the frappe-dependencies
+block that Frappe Cloud requires, the Product Bundle double-consumption guard,
+and that no vendor name has crept back into user-facing strings.

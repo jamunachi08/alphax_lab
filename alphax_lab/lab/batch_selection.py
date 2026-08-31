@@ -3,10 +3,10 @@
 
 """Batch allocation for lab consumable issues.
 
-ERPNext v15 routes batch tracking through the Serial and Batch Bundle. Creating
-those bundles from code for every consumable line is slow and fragile, so this
-module sets `use_serial_batch_fields = 1` on the Stock Entry Detail row and
-populates the legacy `batch_no` field. ERPNext builds the bundle on submit.
+v15 routes batch tracking through the Serial and Batch Bundle. Creating those
+bundles from code for every consumable line is slow and fragile, so this module
+sets `use_serial_batch_fields = 1` on the Stock Entry Detail row and populates
+the legacy `batch_no` field. The bundle is then built on submit.
 
 The allocator returns one row per (batch, qty) pair, so a single consumable
 requirement may expand into several Stock Entry Detail rows when no single

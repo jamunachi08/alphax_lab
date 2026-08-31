@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026, Neotec Integrated Solutions and contributors
-"""Standalone tests for the three-tier consumption plan builder.
+"""Standalone tests for the consumption plan builder.
 
 Runs without a bench or database — frappe is stubbed with fixture data, so this
 can go in CI ahead of any site being available.
@@ -13,30 +13,31 @@ import types
 import pathlib
 
 MAPS = {
-	"LAB-CBC": {"name": "CBC", "sample_type": "Whole Blood EDTA", "requires_venipuncture": 1},
-	"LAB-LFT": {"name": "LFT", "sample_type": "Serum", "requires_venipuncture": 1},
-	"LAB-URINE": {"name": "Urine Routine", "sample_type": "Urine", "requires_venipuncture": 0},
+	"LAB-CBC": {"name": "CBC", "sample_type": "Whole Blood EDTA"},
+	"LAB-LFT": {"name": "LFT", "sample_type": "Serum"},
+	"LAB-URINE": {"name": "Urine Routine", "sample_type": "Urine"},
 }
 
+# Each test carries its own complete consumable list, draw items included.
 CONSUMABLES = {
-	"LAB-CBC": [{"item": "REG-CBC", "qty": 1}, {"item": "CTRL-CBC", "qty": 0.05}],
-	"LAB-LFT": [{"item": "REG-LFT", "qty": 1}, {"item": "CUVETTE", "qty": 4}],
-	"LAB-URINE": [{"item": "DIPSTICK", "qty": 1}],
-	"KIT-VENI": [
+	"LAB-CBC": [
 		{"item": "NEEDLE-21G", "qty": 1},
 		{"item": "COTTON", "qty": 2},
-		{"item": "SWAB", "qty": 1},
-		{"item": "GLOVES", "qty": 1},
+		{"item": "TUBE-EDTA", "qty": 1},
+		{"item": "REG-CBC", "qty": 1},
+		{"item": "CTRL-CBC", "qty": 0.05},
 	],
-	"CONT-EDTA": [{"item": "TUBE-EDTA", "qty": 1}],
-	"CONT-SERUM": [{"item": "TUBE-SERUM", "qty": 1}],
-	"CONT-URINE": [{"item": "CUP-URINE", "qty": 1}],
-}
-
-CONTAINERS = {
-	"Whole Blood EDTA": "CONT-EDTA",
-	"Serum": "CONT-SERUM",
-	"Urine": "CONT-URINE",
+	"LAB-LFT": [
+		{"item": "NEEDLE-21G", "qty": 1},
+		{"item": "COTTON", "qty": 2},
+		{"item": "TUBE-SERUM", "qty": 1},
+		{"item": "REG-LFT", "qty": 1},
+		{"item": "CUVETTE", "qty": 4},
+	],
+	"LAB-URINE": [
+		{"item": "CUP-URINE", "qty": 1},
+		{"item": "DIPSTICK", "qty": 1},
+	],
 }
 
 
@@ -58,9 +59,7 @@ def install_stubs():
 		return []
 
 	f.get_all = get_all
-	f.get_cached_value = lambda dt, name, field: (
-		CONTAINERS.get(name) if dt == "Lab Sample Type" else "Nos"
-	)
+	f.get_cached_value = lambda dt, name, field: "Nos"
 	f.throw = lambda *a, **k: None
 	f.msgprint = lambda *a, **k: None
 	f.bold = lambda x: x
@@ -119,7 +118,6 @@ def main():
 	sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 	from alphax_lab.lab import consumption
 
-	settings = _D({"venipuncture_item": "KIT-VENI"})
 	failures = []
 
 	def check(label, condition):
@@ -127,33 +125,35 @@ def main():
 		if not condition:
 			failures.append(label)
 
-	print("single test, single sample type")
-	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", 1)]), settings)
-	check("one needle", plan.get("NEEDLE-21G") == 1)
+	print("single test")
+	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", 1)]))
+	check("draw items come from the test itself", plan.get("NEEDLE-21G") == 1)
 	check("one EDTA tube", plan.get("TUBE-EDTA") == 1)
 	check("fractional control qty preserved", plan.get("CTRL-CBC") == 0.05)
 
-	print("three tests, one draw, two blood sample types")
-	plan, _ = consumption.build_plan(
-		Doc([Row("LAB-CBC", 1), Row("LAB-LFT", 1), Row("LAB-URINE", 1)]), settings
-	)
-	check("venipuncture kit issued once", plan.get("NEEDLE-21G") == 1)
-	check("cotton not multiplied per test", plan.get("COTTON") == 2)
-	check("one container per sample type", plan.get("TUBE-EDTA") == 1 and plan.get("TUBE-SERUM") == 1)
-	check("urine cup issued", plan.get("CUP-URINE") == 1)
+	print("two blood tests on one document")
+	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", 1), Row("LAB-LFT", 1)]))
+	check("shared consumables accumulate across tests", plan.get("NEEDLE-21G") == 2)
+	check("cotton accumulates", plan.get("COTTON") == 4)
+	check("each test's own container", plan.get("TUBE-EDTA") == 1 and plan.get("TUBE-SERUM") == 1)
+	check("reagents kept separate", plan.get("REG-CBC") == 1 and plan.get("REG-LFT") == 1)
 
-	print("repeat run, line qty 2")
-	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", 2)]), settings)
-	check("reagents scale with line qty", plan.get("REG-CBC") == 2)
-	check("kit does not scale with line qty", plan.get("NEEDLE-21G") == 1)
+	print("line qty 2")
+	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", 2)]))
+	check("everything scales with line qty", plan.get("REG-CBC") == 2 and plan.get("NEEDLE-21G") == 2)
 
-	print("no venipuncture required")
-	plan, _ = consumption.build_plan(Doc([Row("LAB-URINE", 1)]), settings)
-	check("no needle for urine-only", "NEEDLE-21G" not in plan)
+	print("non-blood test")
+	plan, _ = consumption.build_plan(Doc([Row("LAB-URINE", 1)]))
+	check("no draw items", "NEEDLE-21G" not in plan)
+	check("cup and dipstick issued", plan.get("CUP-URINE") == 1 and plan.get("DIPSTICK") == 1)
 
 	print("unmapped item")
-	plan, _ = consumption.build_plan(Doc([Row("SERVICE-CONSULT", 1)]), settings)
+	plan, _ = consumption.build_plan(Doc([Row("SERVICE-CONSULT", 1)]))
 	check("empty plan, no consumption", not plan)
+
+	print("credit note")
+	plan, _ = consumption.build_plan(Doc([Row("LAB-CBC", -1)], is_return=1))
+	check("return reverses the same plan", plan.get("NEEDLE-21G") == 1)
 
 	print()
 	if failures:

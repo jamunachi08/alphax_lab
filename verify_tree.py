@@ -106,6 +106,21 @@ def check_frappe_dependencies():
 		errors.append("[tool.bench.frappe-dependencies] missing 'erpnext' pin")
 
 
+def check_no_vendor_strings():
+	"""Product is white-labelled: no vendor name in user-facing strings.
+
+	The functional dependency (hooks.required_apps, the pyproject pin) is
+	deliberately exempt; the app will not install or run without it.
+	"""
+	exempt = {ROOT / "pyproject.toml", PKG / "hooks.py", ROOT / "verify_tree.py"}
+	for pattern in ("*.py", "*.json", "*.js", "*.md"):
+		for path in ROOT.rglob(pattern):
+			if path in exempt or "__pycache__" in str(path):
+				continue
+			if "ERPNext" in path.read_text():
+				errors.append(f"vendor name in user-facing file: {path.relative_to(ROOT)}")
+
+
 def check_bundle_guard():
 	"""The Product Bundle double-consumption guard must not be removed."""
 	src = (APP / "doctype" / "plasma_test_map" / "plasma_test_map.py").read_text()
@@ -140,6 +155,7 @@ def main():
 	check_hooks()
 	check_no_server_scripts()
 	check_frappe_dependencies()
+	check_no_vendor_strings()
 	check_bundle_guard()
 	check_tabs()
 

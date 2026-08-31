@@ -6,18 +6,75 @@
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": ["plasma_test_name", "plasma_test_code", "item", "item_name", "column_break_1", "sample_type", "requires_venipuncture", "is_active", "section_break_1", "notes"],
+ "field_order": [
+  "plasma_test_name",
+  "plasma_test_code",
+  "item",
+  "item_name",
+  "column_break_1",
+  "sample_type",
+  "is_active",
+  "section_break_1",
+  "notes"
+ ],
  "fields": [
-  {"fieldname": "plasma_test_name", "fieldtype": "Data", "in_list_view": 1, "label": "Plasma Test Name", "reqd": 1, "unique": 1, "description": "Exact string sent by Plasma on the invoice line."},
-  {"fieldname": "plasma_test_code", "fieldtype": "Data", "label": "Plasma Test Code", "search_index": 1},
-  {"fieldname": "item", "fieldtype": "Link", "in_list_view": 1, "label": "ERPNext Item", "options": "Item", "reqd": 1, "search_index": 1},
-  {"fieldname": "item_name", "fieldtype": "Data", "fetch_from": "item.item_name", "label": "Item Name", "read_only": 1},
-  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
-  {"fieldname": "sample_type", "fieldtype": "Link", "in_list_view": 1, "label": "Sample Type", "options": "Lab Sample Type"},
-  {"fieldname": "requires_venipuncture", "fieldtype": "Check", "label": "Requires Venipuncture", "default": "1"},
-  {"fieldname": "is_active", "fieldtype": "Check", "label": "Is Active", "default": "1"},
-  {"fieldname": "section_break_1", "fieldtype": "Section Break"},
-  {"fieldname": "notes", "fieldtype": "Small Text", "label": "Notes"}
+  {
+   "fieldname": "plasma_test_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plasma Test Name",
+   "reqd": 1,
+   "unique": 1,
+   "description": "Exact string sent by Plasma on the invoice line."
+  },
+  {
+   "fieldname": "plasma_test_code",
+   "fieldtype": "Data",
+   "label": "Plasma Test Code",
+   "search_index": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "fetch_from": "item.item_name",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sample_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sample Type",
+   "options": "Lab Sample Type"
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "1"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
@@ -27,8 +84,30 @@
  "name": "Plasma Test Map",
  "owner": "Administrator",
  "permissions": [
-  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
-  {"create": 1, "delete": 0, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Stock Manager", "share": 1, "write": 1}
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "write": 1
+  }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

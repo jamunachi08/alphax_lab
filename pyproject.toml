@@ -1,7 +1,7 @@
 [project]
 name = "alphax_lab"
 authors = [{ name = "Neotec Integrated Solutions", email = "support@neotec.sa" }]
-description = "Lab consumable consumption for Plasma-integrated ERPNext"
+description = "Lab consumable consumption for Plasma-integrated lab operations"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
