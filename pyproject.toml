@@ -1,0 +1,22 @@
+[project]
+name = "alphax_lab"
+authors = [{ name = "Neotec Integrated Solutions", email = "support@neotec.sa" }]
+description = "Lab consumable consumption for Plasma-integrated lab operations"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "alphax_lab"
+
+# Frappe Cloud reads this block to resolve the bench version to build against.
+# Without it the app is rejected at deploy time with:
+#   Could not find a compatible Frappe version in pyproject.toml
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+erpnext = ">=15.0.0,<16.0.0"
