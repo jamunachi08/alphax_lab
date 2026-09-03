@@ -1,0 +1,13 @@
+﻿item_code,item_name,item_group,stock_uom,is_stock_item,is_sales_item,is_purchase_item
+LAB-CBC,Complete Blood Count (CBC),Lab Tests,Nos,0,1,0
+LAB-ESR,ESR,Lab Tests,Nos,0,1,0
+LAB-BLOODGRP,Blood Group and Rh,Lab Tests,Nos,0,1,0
+LAB-FBS,Fasting Blood Sugar,Lab Tests,Nos,0,1,0
+LAB-HBA1C,HbA1c,Lab Tests,Nos,0,1,0
+LAB-LIPID,Lipid Profile,Lab Tests,Nos,0,1,0
+LAB-LFT,Liver Function Test,Lab Tests,Nos,0,1,0
+LAB-RFT,Renal Function Test,Lab Tests,Nos,0,1,0
+LAB-TSH,TSH,Lab Tests,Nos,0,1,0
+LAB-VITD,Vitamin D (25-OH),Lab Tests,Nos,0,1,0
+LAB-CRP,C-Reactive Protein,Lab Tests,Nos,0,1,0
+LAB-URINE,Urine Routine,Lab Tests,Nos,0,1,0

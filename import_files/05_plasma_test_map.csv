@@ -1,0 +1,13 @@
+﻿plasma_test_name,plasma_test_code,item,sample_type,is_active
+Complete Blood Count (CBC),LAB-CBC,LAB-CBC,Whole Blood EDTA,1
+ESR,LAB-ESR,LAB-ESR,Whole Blood EDTA,1
+Blood Group and Rh,LAB-BLOODGRP,LAB-BLOODGRP,Whole Blood EDTA,1
+Fasting Blood Sugar,LAB-FBS,LAB-FBS,Serum,1
+HbA1c,LAB-HBA1C,LAB-HBA1C,Whole Blood EDTA,1
+Lipid Profile,LAB-LIPID,LAB-LIPID,Serum,1
+Liver Function Test,LAB-LFT,LAB-LFT,Serum,1
+Renal Function Test,LAB-RFT,LAB-RFT,Serum,1
+TSH,LAB-TSH,LAB-TSH,Serum,1
+Vitamin D (25-OH),LAB-VITD,LAB-VITD,Serum,1
+C-Reactive Protein,LAB-CRP,LAB-CRP,Serum,1
+Urine Routine,LAB-URINE,LAB-URINE,Urine,1
