@@ -1,0 +1,33 @@
+﻿item_code,item_name,item_group,stock_uom,is_stock_item,is_sales_item,is_purchase_item,has_batch_no,has_expiry_date,create_new_batch,batch_number_series
+CONS-NEEDLE-21G,Needle 21G x 1.5in,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-NEEDLE-23G,Needle 23G x 1in,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-BUTTERFLY-23G,Butterfly Needle 23G,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-SYRINGE-5ML,Syringe 5ml,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-COTTON-BALL,Cotton Ball,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-ALCOHOL-SWAB,Alcohol Swab,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-GLOVES-NITRILE,Nitrile Gloves (pair),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TOURNIQUET,Tourniquet (disposable),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-PLASTER,Adhesive Plaster,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TUBE-EDTA,EDTA Tube 3ml (lavender),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TUBE-SST,SST Serum Tube 5ml (gold),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TUBE-FLUORIDE,Fluoride Tube 2ml (grey),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TUBE-CITRATE,Citrate Tube 2.7ml (blue),Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-CUP-URINE,Urine Cup 60ml,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TIP-200UL,Pipette Tip 200ul,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-TIP-1000UL,Pipette Tip 1000ul,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-CUVETTE,Reaction Cuvette,Lab Consumables,Nos,1,0,1,0,0,0,
+CONS-SLIDE,Microscope Slide,Lab Consumables,Nos,1,0,1,0,0,0,
+REAG-CBC,CBC Reagent Pack,Lab Consumables,Nos,1,0,1,1,1,1,REAG-CBC-.####
+REAG-ESR,ESR Reagent,Lab Consumables,Nos,1,0,1,1,1,1,REAG-ESR-.####
+REAG-GLUCOSE,Glucose Reagent,Lab Consumables,Nos,1,0,1,1,1,1,REAG-GLUCOSE-.####
+REAG-HBA1C,HbA1c Reagent Kit,Lab Consumables,Nos,1,0,1,1,1,1,REAG-HBA1C-.####
+REAG-LIPID,Lipid Panel Reagent Set,Lab Consumables,Nos,1,0,1,1,1,1,REAG-LIPID-.####
+REAG-LFT,LFT Reagent Set,Lab Consumables,Nos,1,0,1,1,1,1,REAG-LFT-.####
+REAG-RFT,RFT Reagent Set,Lab Consumables,Nos,1,0,1,1,1,1,REAG-RFT-.####
+REAG-TSH,TSH Reagent Kit,Lab Consumables,Nos,1,0,1,1,1,1,REAG-TSH-.####
+REAG-VITD,Vitamin D Reagent Kit,Lab Consumables,Nos,1,0,1,1,1,1,REAG-VITD-.####
+REAG-CRP,CRP Reagent,Lab Consumables,Nos,1,0,1,1,1,1,REAG-CRP-.####
+REAG-BLOODGRP,Anti-A/B/D Antisera Set,Lab Consumables,Nos,1,0,1,1,1,1,REAG-BLOODGRP-.####
+CTRL-HEMA,Hematology Control Serum,Lab Consumables,Nos,1,0,1,1,1,1,CTRL-HEMA-.####
+CTRL-CHEM,Chemistry Control Serum,Lab Consumables,Nos,1,0,1,1,1,1,CTRL-CHEM-.####
+STRIP-URINE,Urine Dipstick 10-parameter,Lab Consumables,Nos,1,0,1,1,1,1,STRIP-URINE-.####
